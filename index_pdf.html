@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Презентация: Арифметические действия над натуральными числами</title>
+    <!-- Подключаем официальную библиотеку PDF.js от Mozilla для рендеринга PDF на лету -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            max-width: 800px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: #00d2ff;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            color: #a0a0c0;
+        }
+
+        .presentation-container {
+            position: relative;
+            width: 100%;
+            max-width: 960px;
+            background: #16162a;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a2a4a;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 16 / 9;
+        }
+
+        #pdf-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: #0d0d1a;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 960px;
+            margin-top: 20px;
+            background: #16162a;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: 1px solid #2a2a4a;
+        }
+
+        .btn {
+            background: #00d2ff;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #00b2dd;
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #2a2a4a;
+            color: #6a6a8a;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .counter {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #00d2ff;
+            background: rgba(0, 210, 255, 0.1);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            color: #00d2ff;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .instructions {
+            margin-top: 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #00d2ff;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            max-width: 650px;
+            font-size: 0.85rem;
+            color: #b0b0d0;
+            line-height: 1.5;
+        }
+
+        .instructions h3 {
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .btn span { display: none; }
+            .header h1 { font-size: 1.2rem; }
+            .controls { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Царство Науки: Арифметические действия</h1>
+        <p>Интерактивная онлайн-презентация из PDF-документа • 5 класс</p>
+    </div>
+
+    <div class="presentation-container">
+        <div id="loading" class="loading-overlay">Загрузка космических архивов науки...</div>
+        <canvas id="pdf-canvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="prevBtn" onclick="onPrevPage()" disabled>
+            ← <span>Назад</span>
+        </button>
+        <div class="counter" id="slideCounter">Страница: <span id="page_num">0</span> / <span id="page_count">0</span></div>
+        <button class="btn" id="nextBtn" onclick="onNextPage()" disabled>
+            <span>Вперед</span> →
+        </button>
+    </div>
+
+    <div class="instructions">
+        <h3>💡 Инструкция по запуску презентации прямо из PDF:</h3>
+        <ol>
+            <li>Убедитесь, что ваш файл презентации в вашей папке (репозитории) на GitHub называется строго <b><code>Презентация Белянская С.С..pdf</code></b> (или поменяйте название в коде на строке 152).</li>
+            <li>Скачайте этот файл <code>index.html</code> и положите его в ту же папку на GitHub, где лежит сам PDF.</li>
+            <li>Включите <b>GitHub Pages</b> в настройках репозитория. Теперь ваш PDF будет открываться как интерактивный красивый слайдер на весь экран! Перелистывать можно кнопками или стрелками на клавиатуре.</li>
+        </ol>
+    </div>
+
+    <script>
+        // Указываем путь к вашему PDF-файлу (должен лежать в той же папке)
+        const url = './Презентация Белянская С.С..pdf';
+
+        // Настройка PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let pdfDoc = null,
+            pageNum = 1,
+            pageRendering = false,
+            pageNumPending = null,
+            scale = 2, // Качество рендеринга (2 = высокое разрешение)
+            canvas = document.getElementById('pdf-canvas'),
+            ctx = canvas.getContext('2d');
+
+        /**
+         * Рендеринг страницы
+         */
+        function renderPage(num) {
+            pageRendering = true;
+            document.getElementById('loading').style.display = 'block';
+            
+            // Получаем страницу
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale: scale });
+                
+                // Настраиваем размеры холста под пропорции страницы
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Запускаем отрисовку PDF на холсте
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                const renderTask = page.render(renderContext);
+
+                // Ожидание завершения отрисовки
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    document.getElementById('loading').style.display = 'none';
+                    if (pageNumPending !== null) {
+                        // Если в очереди есть следующая страница, рендерим её
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+
+            // Обновляем счетчики страниц
+            document.getElementById('page_num').textContent = num;
+            
+            // Включаем/выключаем кнопки управления
+            document.getElementById('prevBtn').disabled = (num <= 1);
+            document.getElementById('nextBtn').disabled = (num >= pdfDoc.numPages);
+        }
+
+        /**
+         * Проверка очереди на рендеринг
+         */
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+
+        /**
+         * Кнопка НАЗАД
+         */
+        function onPrevPage() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+        }
+
+        /**
+         * Кнопка ВПЕРЕД
+         */
+        function onNextPage() {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+        }
+
+        // Поддержка стрелочек клавиатуры и пробела
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                if (pdfDoc && pageNum < pdfDoc.numPages) onNextPage();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (pageNum > 1) onPrevPage();
+            }
+        });
+
+        /**
+         * Асинхронная загрузка PDF-документа
+         */
+        pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+            pdfDoc = pdfDoc_;
+            document.getElementById('page_count').textContent = pdfDoc.numPages;
+            
+            // Активируем кнопки после успешной загрузки
+            document.getElementById('nextBtn').disabled = (pdfDoc.numPages <= 1);
+
+            // Рендерим первую страницу
+            renderPage(pageNum);
+        }).catch(function(error) {
+            console.error('Ошибка загрузки PDF: ', error);
+            document.getElementById('loading').innerHTML = 
+                `<span style="color:#ff4a4a;">Ошибка загрузки файла PDF.</span><br>` +
+                `<span style="font-size:0.9rem; color:#aaa;">Проверьте, что имя файла совпадает с кодом.</span>`;
+        });
+    </script>
+</body>
+</html>
